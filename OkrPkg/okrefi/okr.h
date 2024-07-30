@@ -29,7 +29,6 @@ Licensed under BSD-3, see COPYING.BSD file for details."
 #include <Protocol/SimpleFileSystem.h>
 #include <Protocol/Decompress.h>
 
-#define StrnCpy strncpy
 #define __CONSOLE_CONTROL_H__
 #define EFI_CONSOLE_CONTROL_PROTOCOL_GUID \
   { 0xf42f7782, 0x12e, 0x4c12, {0x99, 0x56, 0x49, 0xf9, 0x43, 0x4, 0xf7, 0x21} }
@@ -351,3 +350,11 @@ char HasFactoryBackup();
 //int DrawCopyrightDlg();
 ////int  DrawNewCopyrightDlg(); //  need show many info add by wh 2018-02-01
 
+// Define deprecated function
+CHAR16 *
+EFIAPI
+StrnCpy (
+  OUT     CHAR16                    *Destination,
+  IN      CONST CHAR16              *Source,
+  IN      UINTN                     Length
+  );

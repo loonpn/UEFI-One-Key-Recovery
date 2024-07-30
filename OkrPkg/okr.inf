@@ -140,6 +140,8 @@
   pbkdf2_sha256/sha3.h
   pbkdf2_sha256/sha3.c
 
+  okrefi/deprecatedfunc.c
+
 [Sources.IA32]
   ntfswin/utilsex.asm
     
