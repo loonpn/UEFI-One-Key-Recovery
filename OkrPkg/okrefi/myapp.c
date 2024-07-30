@@ -75,7 +75,26 @@ main (
 	UINTN mapKey;
 	UINTN descriptorSize;
 	UINT32 descriptorVersion;
-	
+	UINTN Timeout;
+
+	// Check the current watchdog timer status
+	status = gBS->GetNextMonotonicCount(&Timeout);
+	if (EFI_ERROR(Status))
+	{
+		Print(L"Failed to get watchdog timer status: %r\n", status);
+		return status;
+	}
+
+	// If the watchdog timer is set, disable it
+	if (Timeout != 0)
+	{
+		status = gBS->SetWatchdogTimer(0, 0, 0, NULL);
+		if (EFI_ERROR(Status))
+		{
+			Print(L"Failed to disable watchdog timer: %r\n", status);
+			return status;
+		}
+	}
 	mymemset(&g_data, 0, sizeof(&g_data));
 	
 	
