@@ -75,26 +75,7 @@ main (
 	UINTN mapKey;
 	UINTN descriptorSize;
 	UINT32 descriptorVersion;
-	UINTN Timeout;
-
-	// Check the current watchdog timer status
-	status = gBS->GetNextMonotonicCount(&Timeout);
-	if (EFI_ERROR(Status))
-	{
-		Print(L"Failed to get watchdog timer status: %r\n", status);
-		return status;
-	}
-
-	// If the watchdog timer is set, disable it
-	if (Timeout != 0)
-	{
-		status = gBS->SetWatchdogTimer(0, 0, 0, NULL);
-		if (EFI_ERROR(Status))
-		{
-			Print(L"Failed to disable watchdog timer: %r\n", status);
-			return status;
-		}
-	}
+	
 	mymemset(&g_data, 0, sizeof(&g_data));
 	
 	
@@ -365,7 +346,26 @@ OkrMain (
 )
 {
     EFI_STATUS Status;
-	MyLog(LOG_ERROR, L" OkrMain starting ....  .\n");
+    UINTN Timeout;
+    // Check the current watchdog timer status
+    Status = gBS->GetNextMonotonicCount(&Timeout);
+    if (EFI_ERROR(Status))
+    {
+        Print(L"Failed to get watchdog timer status: %r\n", Status);
+        return Status;
+    }
+
+    // If the watchdog timer is set, disable it
+    if (Timeout != 0)
+    {
+        Status = gBS->SetWatchdogTimer(0, 0, 0, NULL);
+        if (EFI_ERROR(Status))
+        {
+            Print(L"Failed to disable watchdog timer: %r\n", Status);
+            return Status;
+        }
+    }
+    MyLog(LOG_ERROR, L" OkrMain starting ....  .\n");
     //ShellAppMain(0, NULL);
     //应该是编译器问题，大概是这么一个流程：
     //1、如果直接指定入口地址为OkrMain，那么在/O1开关下进行优化时，没有用到的变量及函数会被优化掉，这样导致link时提示没有_fltused变量，从而出错；
