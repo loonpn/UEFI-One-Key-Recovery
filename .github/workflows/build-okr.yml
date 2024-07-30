@@ -1,0 +1,76 @@
+#
+#    GitHub actions workflow to build UEFI One Key Recovery using VS2022
+#    Copyright (C) 2024 Steven
+#
+#    This program is free software; you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation; either version 2 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to the Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+
+name: Build UEFI One Key Recovery using VS2022
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      NASM_PREFIX: "C:\\Program Files\\NASM\\"
+    defaults:
+      run:
+        shell: cmd
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Install setuptools
+      run: pip install --upgrade setuptools
+
+    - name: Install NASM
+      run: choco install nasm
+
+    - name: Clone EDK2
+      run: |
+        git clone https://github.com/tianocore/edk2.git
+        git clone https://github.com/tianocore/edk2-libc.git
+        cd edk2
+        git submodule update --init
+
+    - name: Build EDK2 Base Tools
+      run: |
+        cd edk2
+        edksetup.bat ForceRebuild
+
+    - name: Build UEFI One Key Recovery
+      run: |
+        set PACKAGES_PATH=%CD%\edk2;%CD%\edk2-libc;%CD%;
+        set OKR_PATH=%CD%
+        cd edk2
+        call edksetup.bat
+        build -t VS2022 -a X64 -p %OKR_PATH%\OkrPkg\OkrPkg.dsc -m %OKR_PATH%\OkrPkg\okr.inf -b RELEASE
+
+    - name: Upload build output as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-VS2022-output
+        path: edk2\Build\OkrPkg\RELEASE_VS2022\X64\OkrPkg\okr\OUTPUT\okrefi.efi
